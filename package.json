@@ -1,0 +1,32 @@
+{
+  "name": "prueba_chat_bot",
+  "version": "1.0.0",
+  "description": "prueba chat bot",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "server": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hjanner/prueba_chat_bot_openia.git"
+  },
+  "author": "Hanner Hernandez",
+  "type": "module",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Hjanner/prueba_chat_bot_openia/issues"
+  },
+  "homepage": "https://github.com/Hjanner/prueba_chat_bot_openia#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.51.0",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.12.2",
+    "openai": "^4.100.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
