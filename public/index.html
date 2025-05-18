@@ -15,12 +15,12 @@
         <div class="chat-header">
             <h2>
                 <div class="bot-icon"></div>
-                Asistente Virtual
+                UCABOT
             </h2>
         </div>
         
         <div class="chat-messages">
-            <div class="message bot-message">
+            <div class="message bot-message" id="bot-message_container">
                 ¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?
             </div>
             
@@ -29,19 +29,16 @@
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
             </div>
-            
-            <div class="message user-message">
-                Me gustaría consultar sobre...
-            </div>
         </div>
         
         <div class="input-container">
             <input 
                 type="text" 
-                class="chat-input" 
+                class="chat-input"
+                id="chat-input" 
                 placeholder="Escribe tu mensaje..."
             >
-            <button class="send-button">
+            <button class="send-button" id="send-button">
                 Enviar
             </button>
         </div>

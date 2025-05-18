@@ -19,38 +19,18 @@ app.use("/", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));        //para convertir todo los datos que se pasan por la url a json
 
-//instancia de openia
-    // const openai = new OpenAI({
-    //     apiKey: process.env.OpenAI_API_KEY,             //manera de identificarme con openia
-    // });
 
-    // const openai = new OpenAI({
-    //         baseURL: 'https://api.deepseek.com',
-    //         apiKey:  process.env.DEEPSEEK_API_KEY,
-    // });
-    
-    // const anthropic = new Anthropic({
-    //     apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
-    // });
 
-    const openai = new OpenAI({
-        baseURL: 'https://openrouter.ai/api/v1',
-        apiKey: process.env.OPENROUTER_API_KEY,
-    });
+//contexto 
+const context = 
+    `Eres el Asistente Virtual de La UCAB, tu misión principal es ofrecer la mejor experiencia y atención al cliente para los estudiantes.
 
-//ruta/endpoint/url
-app.post("/api/chatbot", async (req, res) => {
-    
-    const context = 
-    `Eres el Asistente Virtual de **Hanner Fresco y Más**, tu misión principal es ofrecer la mejor experiencia y atención al cliente.
-
-    Nombre del Establecimiento:** Hanner Fresco y Más
     Ubicación: Av. Siempre Viva 123, Centro, Maturín, Monagas, Venezuela.
     Horario de Operación:
         Lunes a Sábado: 8:00 AM - 7:00 PM
         Domingos: 9:00 AM - 3:00 PM
-        Feriados: Confirmar horario especial (siempre consulta al personal si no estás seguro).
         Socios del establecimiento: Sergio Velazquez
+        Precio de la matricula: 3000 $
         Especialidades/Productos Destacados:** Amplia variedad de frutas y verduras frescas de temporada, productos lácteos artesanales, carnes de origen local, panadería recién horneada, y una sección de delicatessen con productos gourmet y orgánicos. También contamos con una sección de productos de limpieza y abarrotes básicos.
         Servicios Adicionales:
         Entrega a Domicilio: Ofrecemos servicio de delivery en la zona de Maturín. Puedes solicitar más información sobre tarifas y zonas de cobertura.
@@ -71,10 +51,36 @@ app.post("/api/chatbot", async (req, res) => {
     Siempre inicia tu respuesta identificándote como el "Asistente Virtual de Mercado Hanner y Más".
     No des consejos médicos, financieros o profesionales de ningún tipo. Mantente siempre dentro del ámbito de la información del mercado.
     `;
+//instancia de openia
+    // const openai = new OpenAI({
+    //     apiKey: process.env.OpenAI_API_KEY,             //manera de identificarme con openia
+    // });
 
-    //recibir pregunta del usuario
-    const { message } = req.body;
+    // const openai = new OpenAI({
+    //         baseURL: 'https://api.deepseek.com',
+    //         apiKey:  process.env.DEEPSEEK_API_KEY,
+    // });
     
+    // const anthropic = new Anthropic({
+    //     apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
+    // });
+
+    const openai = new OpenAI({
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: process.env.OPENROUTER_API_KEY,
+    });
+
+    let conversations = {};
+
+
+
+//ruta/endpoint/url
+app.post("/api/chatbot", async (req, res) => {
+    //recibir pregunta del usuario
+    const { userID, message } = req.body;
+    
+    
+
     if(!message) return res.status(404).json({error : "Has mandado un mensaje vacio"});
     
     //peticion a la ia
@@ -112,7 +118,8 @@ app.post("/api/chatbot", async (req, res) => {
         // });
 
         //openrouter
-          const response = await openai.chat.completions.create({
+          
+        const response = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages: [
                 {role: "system", content: context},                            //role system, como se tiene que comportar la ia
