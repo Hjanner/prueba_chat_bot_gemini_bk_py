@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Hjanner/prueba_chat_bot_openia#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.51.0",
+    "@google/genai": "^0.14.1",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "express": "^4.12.2",
