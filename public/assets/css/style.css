@@ -10,9 +10,10 @@ a{
     color: #4a69bd;
 }
 
-ul, ol, li{
+/* ul, ol, li{
     margin: 0 1rem;
-}
+
+} */
 
 body {
     background-color: #404045;
@@ -21,6 +22,7 @@ body {
     align-items: center;
     min-height: 100vh;
     word-wrap: break-word;
+    white-space: pre-line;
 }
 
 /* Contenedor del chatbot */

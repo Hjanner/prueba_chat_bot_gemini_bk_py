@@ -11,6 +11,7 @@ dotenv.config();
 
 //carga express
 const app = express();
+const host = '0.0.0.0';
 const port = process.env.PORT || 3000;
 
 //servir front
@@ -218,6 +219,6 @@ app.post("/api/chatbot", async (req, res) => {
 });
 
 //servir el backend
-app.listen(port, () =>{
-    console.log("todo va  bello pa");
-});
+// app.listen(port, () =>{
+//     console.log("todo va  bello pa");
+// });
