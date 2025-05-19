@@ -6,6 +6,14 @@
     font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
+a{
+    color: #4a69bd;
+}
+
+ul, ol, li{
+    margin: 0 1rem;
+}
+
 body {
     background-color: #404045;
     display: flex;

@@ -95,18 +95,15 @@ const sendMessage = async () => {
         //incrustar la respuesta en la caja de mensajes del chat
         const data = await reponse.json();          //convertir la repsuesta en un objeto json
         
-        // messageContainer.innerHTML += `<div class="message bot-message">${data.reply}</div>`;
-        // messageContainer.scrollTop = messageContainer.scrollHeight;
-
-                // 3. Añadir la respuesta del bot al chat
+    //3. Añadir la respuesta del bot al chat
         const botMessageDiv = document.createElement('div');
         botMessageDiv.classList.add('message', 'bot-message');
-        botMessageDiv.textContent = data.reply; // Usa la respuesta de la IA real aquí
+        botMessageDiv.innerHTML = `${data.reply}`;
         messageContainer.appendChild(botMessageDiv);
 
     } catch (error) {
         console.log("Error: ", error );   
-                const errorMessageDiv = document.createElement('div');
+        const errorMessageDiv = document.createElement('div');
         errorMessageDiv.classList.add('message', 'bot-message', 'error-message');
         errorMessageDiv.textContent = "Lo siento, hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.";
         messageContainer.appendChild(errorMessageDiv);
