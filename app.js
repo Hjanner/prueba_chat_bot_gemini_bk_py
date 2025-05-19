@@ -219,6 +219,8 @@ app.post("/api/chatbot", async (req, res) => {
 });
 
 //servir el backend
-// app.listen(port, () =>{
-//     console.log("todo va  bello pa");
-// });
+    // app.listen(port, () =>{
+    //     console.log("todo va  bello pa");
+    // });
+
+    export default app;
