@@ -73,32 +73,39 @@ app.post("/api/chatbot", async (req, res) => {
     }
 
     //agregar mensaje del usuario
-    conversations[userID].push({role: "user", content: message});
+    //conversations[userID].push({role: "user", content: message});
+    conversations[userID].push({ 
+        role: "user", 
+        parts: [{ 
+            text: message 
+        }] 
+    });
     
     if(!message) return res.status(404).json({error : "Has mandado un mensaje vacio"});
     
     //peticion a la ia
     try {
 //gemini
-    //   const response = await ai.models.generateContent({
-    //         model: "gemini-2.0-flash",
-    //             contents: message,
-    //         //contents: message,
-    //         config: {
-    //             systemInstruction: context,
-    //         },
-    //     });
+        const response = await ai.models.generateContent({
+                model: "gemini-2.0-flash",
+                contents: conversations[userID],
+                config: {
+                    systemInstruction: context,
+                    temperature: 0.2,
+                    //maxOutputTokens: 200
+                },
+            });
         
-    const response = await openai.chat.completions.create({
-        //model: 'gpt-3.5-turbo',
-        model:'deepseek/deepseek-chat-v3-0324:free',
-        messages: [
-            {role: "system", content: context},                            //role system, como se tiene que comportar la ia
-            ...conversations[userID]                                        //expandir la coversacion 
-        ] ,
-    });
+    // const response = await openai.chat.completions.create({
+    //     //model: 'gpt-3.5-turbo',
+    //     model:'deepseek/deepseek-chat-v3-0324:free',
+    //     messages: [
+    //         {role: "system", content: context},                            //role system, como se tiene que comportar la ia
+    //         ...conversations[userID]                                        //expandir la coversacion 
+    //     ] ,
+    // });
     //devolver respuesta
-    const reply = response.choices[0].message.content;              //sacar la respuesta del modelo de openia
+    //const reply = response.choices[0].message.content;              //sacar la respuesta del modelo de openia
 
         
 //gemini con pdf
@@ -122,22 +129,20 @@ app.post("/api/chatbot", async (req, res) => {
         //     },
         // });
 
-        // const reply = response.text;              //sacar la respuesta del modelo gemini
-
+        const reply = response.text;              //sacar la respuesta del modelo gemini
         
         //agregar al asistente  la respuesta
         conversations[userID].push({
             role: 'assistant', 
-            content: reply
+            parts: [{ 
+                text: reply
+             }] 
         })
 
         //limitar contexto de conversacion
         if (conversations[userID].length > 8) {
             conversations[userID] = conversations[userID].slice(-6);                    //nos quedamos con los ultimos 6mensajes
         }
-
-        console.log(conversations);
-        
 
         return res.status(200).json({reply});
     } catch (error) {
