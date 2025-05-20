@@ -22,7 +22,7 @@ body {
     align-items: center;
     min-height: 100vh;
     word-wrap: break-word;
-    /*  */
+    /* white-space: pre-line; */
 }
 
 /* Contenedor del chatbot */
@@ -91,6 +91,11 @@ body {
     color: #2d3436;
     align-self: flex-start;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    white-space: pre-line;
+}
+
+.bot-message__first{
+    white-space: normal;
 }
 
 .user-message {
