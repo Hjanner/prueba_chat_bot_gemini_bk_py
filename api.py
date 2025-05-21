@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from google import genai
 from google.genai import types
+import httpx
 
 load_dotenv()               # carga las variables de entorno
 
@@ -57,26 +58,39 @@ def mostrar_mensaje():
     message = data.get('message', '')
     userID = data.get('userID', 0)
     
-    #validaciones
-    if not message:
+    if not message:                     #validaciones
         return jsonify({"error": "No se recibió un mensaje del usuario"}), 400
+    if not userID:
+        return jsonify({"error" :  "No se recibió el ID del usuario"}), 400
+
+
+    #leer pdf
+    doc_url = "https://dstvqyil45ir9.cloudfront.net/wp-content/uploads/2025/02/Instructivo-para-WEB-2025-1.pdf"
+    doc_data = httpx.get(doc_url).content
     
+    if not doc_data:                     #validaciones
+        return jsonify({"error": "Ocurrio un fallo al leer el pdf"}), 400
+
     try:
+        #consulta a la ai
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            config=types.GenerateContentConfig(
-                system_instruction=context),
-            contents=message
+        model="gemini-2.0-flash",
+        config=types.GenerateContentConfig(
+            system_instruction=context),                        #comportamiento del bot
+        contents=[
+            types.Part.from_bytes(
+                data=doc_data,                                  #datos pdf
+                mime_type='application/pdf',
+            ),
+            message                                              #mensaje del usuario
+            ]
         )
         
-        #extraer la respuesta del modelo
-        return jsonify({"reply": response.text})
+        return jsonify({"reply": response.text})                # devolver respuesta del bot
 
-        
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
-    
     
 
     
