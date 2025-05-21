@@ -1,65 +1,12 @@
-PS D:\desarrollo\prueba_chat_bot> npm install axios
+Ahora crea el entorno virtual:
+Apply to index.html
+Run
+3. Activa el entorno virtual
+Apply to index.html
+Run
+4. Instala Flask en este entorno
+Apply to index.html
+Run
+5. Verifica que Flask se instala en la ruta correcta
 
-added 23 packages, and audited 24 packages in 6s
-
-6 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-PS D:\desarrollo\prueba_chat_bot> npm install axios --save
-
-up to date, audited 24 packages in 2s
-
-6 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-PS D:\desarrollo\prueba_chat_bot> npm install express@4.12.2 --save
-
-added 38 packages, and audited 62 packages in 9s
-
-6 packages are looking for funding
-  run `npm fund` for details
-
-13 vulnerabilities (2 low, 11 high)
-
-To address all issues, run:
-  npm audit fix --force
-
-Run `npm audit` for details.
-PS D:\desarrollo\prueba_chat_bot> npm audit fix --force
-npm warn using --force Recommended protections disabled.
-
-added 22 packages, removed 5 packages, changed 27 packages, and audited 79 packages in 6s
-
-16 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-PS D:\desarrollo\prueba_chat_bot> npm install dotenv --save
-
-added 1 package, and audited 80 packages in 3s
-
-17 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-PS D:\desarrollo\prueba_chat_bot> npm install openai@10.1.2 --save
-npm error code ETARGET
-npm error notarget No matching version found for openai@10.1.2.
-npm error notarget In most cases you or one of your dependencies are requesting
-npm error notarget a package version that doesn't exist.
-npm error A complete log of this run can be found in: C:\Users\Windows 11\AppData\Local\npm-cache\_logs\2025-05-18T03_36_20_146Z-debug-0.log
-PS D:\desarrollo\prueba_chat_bot> npm install openai --save       
-npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
-
-added 16 packages, and audited 96 packages in 13s
-
-18 packages are looking for funding
-  run `npm fund` for details
-
-found 0 vulnerabilities
-PS D:\desarrollo\prueba_chat_bot> 
-
-
-PS D:\desarrollo\prueba_chat_bot> npm install nodemon --save-dev
+python app.py

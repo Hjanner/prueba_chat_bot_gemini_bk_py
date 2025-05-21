@@ -1,31 +1,18 @@
-//importar dependencias
-import  express, { response } from 'express';
-import dotenv from 'dotenv';
-import { GoogleGenAI } from "@google/genai";
+from flask import Blueprint, request, jsonify
+from dotenv import load_dotenv
+import os
+from google import genai
+from google.genai import types
 
-//cargar config de api key
-dotenv.config();
+load_dotenv()               # carga las variables de entorno
 
-//carga express
-const app = express();
-const host = '0.0.0.0';
-const port = process.env.PORT || 3000;
+api_bp = Blueprint('api', __name__)
 
-//servir front
-app.use("/", express.static("public"));
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key)
 
-//middleware para procesar json
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));        //para convertir todo los datos que se pasan por la url a json
-
-//api
-const ai = new GoogleGenAI({ 
-    apiKey: process.env.GEMINI_API_KEY,
-});
-
-let conversations = {};
-const context = 
-`
+#generar un contexto para el asistente
+context = """
     Eres "UCAB Orientador", un asistente virtual altamente especializado y dedicado a guiar a los bachilleres en todo el proceso de preinscripción a la Universidad Católica Andrés Bello (UCAB) Extensión Guayana.
 
     Tu base de conocimiento es exclusiva y se deriva directamente del documento oficial de preinscripción que te será provisto. A partir de este documento, tu función principal es informar detalladamente sobre:
@@ -60,79 +47,37 @@ const context =
     ---
 
     Tu objetivo primordial es simplificar al máximo la experiencia de los bachilleres, asegurando que obtengan respuestas claras, rápidas y fiables sobre su camino hacia la UCAB Guayana.
-`;
+"""
 
 
-//ruta/endpoint/url
-app.post("/api/chatbot", async (req, res) => {
-    //recibir pregunta del usuario
-    const { userID, message } = req.body;
-
-    //creando el array de conversacion del usuario, es decir las preguntas y las respuestas
-    if (!conversations[userID]) {
-        conversations[userID] = []
-    }
+@api_bp.route('/api/chatbot', methods=['POST'])
+def mostrar_mensaje():
+    # Obtener el mensaje del usuario
+    data = request.get_json()
+    message = data.get('message', '')
+    userID = data.get('userID', 0)
     
-    if(!message) return res.status(404).json({error : "Has mandado un mensaje vacio"});
+    #validaciones
+    if not message:
+        return jsonify({"error": "No se recibió un mensaje del usuario"}), 400
     
-    //peticion a la ia
-    try {
-        //lectura pdf
-        const pdfResp = await fetch('https://dstvqyil45ir9.cloudfront.net/wp-content/uploads/2025/02/Instructivo-para-WEB-2025-1.pdf').then((response) => response.arrayBuffer());
-
-        //agregar mensaje del usuario
-        conversations[userID].push({ 
-            role: "user", 
-            parts: [
-                { text: message },
-                { 
-                    inlineData: 
-                    {
-                        mimeType: 'application/pdf',
-                        data: Buffer.from(pdfResp).toString("base64")
-                    }
-                }
-            ] 
-        });
-
-        //generar la respuesta
-        const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: conversations[userID],
-                config: {
-                    systemInstruction: context,
-                    temperature: 0.2,
-                    //maxOutputTokens: 200
-                },
-            });
-    
-        const reply = response.text;              //sacar la respuesta del modelo gemini
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                system_instruction=context),
+            contents=message
+        )
         
-        //agregar al asistente  la respuesta
-        conversations[userID].push({
-            role: 'assistant', 
-            parts: [{ 
-                text: reply 
-             }] 
-        })
+        #extraer la respuesta del modelo
+        return jsonify({"reply": response.text})
 
-        //limitar contexto de conversacion
-        if (conversations[userID].length > 8) {
-            conversations[userID] = conversations[userID].slice(-6);                    //nos quedamos con los ultimos 6mensajes
-        }
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+    
 
-        return res.status(200).json({reply});
-    } catch (error) {
-        console.log("Error: ", error);
-        return res.status(500).json({
-            error: 'Ha ocurrido un error relacionado con la peticion'
-        });
-    }
-});
+    
 
-//servir el backend
-    app.listen(port, () =>{
-        console.log("todo va  bello pa");
-    });
-
-    //export default app;

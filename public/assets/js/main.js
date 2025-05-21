@@ -4,8 +4,6 @@ const messageContainer = document.querySelector('.chat-messages');         //sel
 const userID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 
-// --- Funciones para el indicador de escritura ---
-
 // Variable global para almacenar la referencia al indicador de escritura actual
 let currentTypingIndicator = null;
 
@@ -56,19 +54,8 @@ function hideTypingIndicator() {
     }
 }
 
-
-const sendMessage = async () => {
-    //tomar el valor del iput, pregunta del usuario
-    const userMessage = inputChat.value.trim();
-
-    if(!userMessage) return false;        //sale de la ejecucion de esta funcion 
-
-    // //meter el mensaje del usuario en la caja de mensajes
-    // messageContainer.innerHTML += `<div class="message user-message">${userMessage}</div>`;
-    // //vaciar el input
-    // inputChat.value = '';
-
-        // 1. Añadir el mensaje del usuario al chat
+//  ---  manejo de mensajes del front
+function addMessageUserChat(userMessage) {
     const userMessageDiv = document.createElement('div');
     userMessageDiv.classList.add('message', 'user-message');
     userMessageDiv.textContent = userMessage;
@@ -76,42 +63,67 @@ const sendMessage = async () => {
     inputChat.value = ''; // Limpiar el input
     messageContainer.scrollTop = messageContainer.scrollHeight; // Desplazar para ver el mensaje del usuario
 
-    // 2. Mostrar el indicador de escritura del bot
-    showTypingIndicator();
+}
 
+function errorMessageChat(){
+    const errorMessageDiv = document.createElement('div');
+    errorMessageDiv.classList.add('message', 'bot-message', 'error-message');
+    errorMessageDiv.textContent = "Lo siento, hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.";
+    messageContainer.appendChild(errorMessageDiv);
+}
+
+function addBotResponseChat(reply) {
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.classList.add('message', 'bot-message');
+    botMessageDiv.innerHTML = `${reply}`;
+    messageContainer.appendChild(botMessageDiv);
+}
+
+// Nueva función para enviar peticion a Python
+const sendFetchAI = async (userMessage) => {
+    try {
+        const response = await fetch('/api/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                userID,
+                message: userMessage
+             })
+        });
+
+        if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa (código 200-299)
+            throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();                 //tomo data devuelta del bot
+        console.log('Respuesta de Python:', data);
+
+        return data.reply;                      //retorno el mero mensaje de respesta
+    } catch (error) {
+        console.error('Error al enviar mensaje a Python:', error);
+    }
+};
+
+const sendMessage = async () => {
+    const userMessage = inputChat.value.trim();                         //tomar el valor del iput, pregunta del usuario
+    
+    if(!userMessage) return false;                      //sale de la ejecucion de esta funcion 
+
+    addMessageUserChat(userMessage);                    // 1. Añadir el mensaje del usuario al chat
+    
+    showTypingIndicator();                              // 2. Mostrar el indicador de escritura del bot
 
     // Espera un ciclo de evento para que el DOM se actualice
     try {
-        //peticion al backend para que responda la ia
-        const reponse = await fetch('/api/chatbot', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},  //indica el formato del contenido de la cabecera, a json
-            body: JSON.stringify({
-                userID,
-                message: userMessage
-            })      //envia el mensaje del usuario
-        });
-
-        //incrustar la respuesta en la caja de mensajes del chat
-        const data = await reponse.json();          //convertir la repsuesta en un objeto json
-        
-    //3. Añadir la respuesta del bot al chat
-        const botMessageDiv = document.createElement('div');
-        botMessageDiv.classList.add('message', 'bot-message');
-        botMessageDiv.innerHTML = `${data.reply}`;
-        messageContainer.appendChild(botMessageDiv);
+        const reply = await sendFetchAI(userMessage);                   //peticion al backend para que responda la ia
+        addBotResponseChat(reply);                //3. Añadir la respuesta del bot al chat
 
     } catch (error) {
         console.log("Error: ", error );   
-        const errorMessageDiv = document.createElement('div');
-        errorMessageDiv.classList.add('message', 'bot-message', 'error-message');
-        errorMessageDiv.textContent = "Lo siento, hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo más tarde.";
-        messageContainer.appendChild(errorMessageDiv);
-
+        errorMessageChat();
     } finally {
         hideTypingIndicator();
-        // Asegúrate de que el chat se desplace al final después de añadir el mensaje del bot
-        messageContainer.scrollTop = messageContainer.scrollHeight;
+        messageContainer.scrollTop = messageContainer.scrollHeight;                 //chat se desplace al final después de añadir el mensaje del bot
     }
 }
 
