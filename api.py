@@ -50,6 +50,7 @@ context = """
     Tu objetivo primordial es simplificar al máximo la experiencia de los bachilleres, asegurando que obtengan respuestas claras, rápidas y fiables sobre su camino hacia la UCAB Guayana.
 """
 
+conversations = {}
 
 @api_bp.route('/api/chatbot', methods=['POST'])
 def mostrar_mensaje():
@@ -64,27 +65,53 @@ def mostrar_mensaje():
         return jsonify({"error" :  "No se recibió el ID del usuario"}), 400
 
 
+    #inicializando historial de conversacion        
+    if userID not in conversations:
+        conversations[userID] = []
+        
+        
     #leer pdf
     doc_url = "https://dstvqyil45ir9.cloudfront.net/wp-content/uploads/2025/02/Instructivo-para-WEB-2025-1.pdf"
     doc_data = httpx.get(doc_url).content
     
     if not doc_data:                     #validaciones
         return jsonify({"error": "Ocurrio un fallo al leer el pdf"}), 400
+        
+        
+    #ajustar el formato esperado por la api
+    user_message_parts = []
+    user_message_parts.append(types.Part(text=message))                #pasando el mensaje del usuario
+    user_message_parts.append(types.Part.from_bytes(
+            data=doc_data,                                  
+            mime_type='application/pdf',
+        ))                                                              #datos pdf
+
+    #agregando mensaje del usaurio al chat
+    conversations[userID].append(
+       types.Content(role='user', parts=user_message_parts)
+    )
 
     try:
         #consulta a la ai
         response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        config=types.GenerateContentConfig(
-            system_instruction=context),                        #comportamiento del bot
-        contents=[
-            types.Part.from_bytes(
-                data=doc_data,                                  #datos pdf
-                mime_type='application/pdf',
-            ),
-            message                                              #mensaje del usuario
-            ]
+            model="gemini-2.0-flash",
+            config=types.GenerateContentConfig(
+                system_instruction=context,             #contexto de comportamiento del bot
+                max_output_tokens=500,                  #cantidad de "palabras[]
+                temperature=0.1                         #creatividad
+            ),                        
+            contents= conversations[userID],
         )
+        
+        #agregar al asistente  la respuesta
+        conversations[userID].append(
+            types.Content(role='assistant', parts=user_message_parts)
+        )
+        
+        #limitar el historial de conversacion
+        if len(conversations[userID]) > 8:
+            conversations[userID] = conversations[userID][-6:] 
+
         
         return jsonify({"reply": response.text})                # devolver respuesta del bot
 
