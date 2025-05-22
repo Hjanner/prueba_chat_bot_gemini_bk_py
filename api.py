@@ -4,6 +4,7 @@ import os
 from google import genai
 from google.genai import types
 import httpx
+import io
 
 load_dotenv()               # carga las variables de entorno
 
@@ -11,6 +12,7 @@ api_bp = Blueprint('api', __name__)
 
 api_key = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
+model_name = "gemini-2.0-flash"
 
 #generar un contexto para el asistente
 context = """
@@ -68,15 +70,31 @@ def mostrar_mensaje():
     #inicializando historial de conversacion        
     if userID not in conversations:
         conversations[userID] = []
-        
-        
+                
     #leer pdf
-    doc_url = "https://dstvqyil45ir9.cloudfront.net/wp-content/uploads/2025/02/Instructivo-para-WEB-2025-1.pdf"
-    doc_data = httpx.get(doc_url).content
+    doc_url = "https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/A17_FlightPlan.pdf"
+    #doc_data = httpx.get(doc_url).content
+    doc_data = io.BytesIO(httpx.get(doc_url).content)                                   #para generar contenido en cache
     
     if not doc_data:                     #validaciones
         return jsonify({"error": "Ocurrio un fallo al leer el pdf"}), 400
+    
+    document = client.files.upload(
+        file=doc_data,
+        config=dict(mime_type='application/pdf')
+    )                                                       #generando contenido en cache
         
+    # Create a cached content object
+    cache = client.caches.create(
+        model=model_name,
+        config=types.CreateCachedContentConfig(
+        system_instruction=context,
+        contents=[document],
+        )
+    )
+    
+    # Display the cache details
+    print(f'{cache=}')  
         
     #ajustar el formato esperado por la api
     user_message_parts = []
@@ -93,14 +111,24 @@ def mostrar_mensaje():
 
     try:
         #consulta a la ai
+        # response = client.models.generate_content(
+        #     model=model_name,
+        #     config=types.GenerateContentConfig(
+        #         system_instruction=context,             #contexto de comportamiento del bot
+        #         max_output_tokens=500,                  #cantidad de "palabras[]
+        #         temperature=0.1                         #creatividad
+        #     ),                        
+        #     contents= conversations[userID],
+        # )
+        
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model=model_name,
+            contents=conversations[userID],
             config=types.GenerateContentConfig(
-                system_instruction=context,             #contexto de comportamiento del bot
+                cached_content=cache.name,
                 max_output_tokens=500,                  #cantidad de "palabras[]
                 temperature=0.1                         #creatividad
-            ),                        
-            contents= conversations[userID],
+            )
         )
         
         #agregar al asistente  la respuesta
@@ -112,6 +140,8 @@ def mostrar_mensaje():
         if len(conversations[userID]) > 8:
             conversations[userID] = conversations[userID][-6:] 
 
+        # (Optional) Print usage metadata for insights into the API call
+        print(f'{response.usage_metadata=}')
         
         return jsonify({"reply": response.text})                # devolver respuesta del bot
 
@@ -120,5 +150,4 @@ def mostrar_mensaje():
         return jsonify({"error": str(e)}), 500
     
 
-    
 
